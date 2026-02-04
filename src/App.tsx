@@ -1,22 +1,68 @@
-import { useState, useEffect } from "react";
-import "./App.css";
+import { useState } from 'react'
+import './App.css'
 
-function App() {
-  const [count, setCount] = useState<number>(0);
-  //criar um novo estado para verificar se o número de count é par ou ímpar e mostrar na tela
-  const [paridade, setParidade] = useState<string>("");
+interface IErro {
+  active: boolean
+  description: string
+}
 
-  useEffect(() => {
-    const texto = count % 2 === 0 ? "PAR" : "ÍMPAR";
-    setParidade(texto);
-  }, [count]);
+export function App() {
+  const [valorDoInput, setValorDoInput] = useState<string>("")
+  const [tarefas, setTarefas] = useState<string[]>([])
+  const [erro, setErro] = useState<IErro>({
+    active: false,
+    description: ""
+  })
+
+  function adicionarTarefa(): void {
+    if (valorDoInput.trim() === "") {
+      setErro({
+        active: true,
+        description: "Campo obrigatório."
+      })
+      return
+    }
+
+    if (valorDoInput.trim().length > 15) {
+      setErro({
+        active: true,
+        description: "Máximo 15 caracteres."
+      })
+      return
+    }
+
+    const tarefasFiltradas = tarefas.filter(
+      tarefa => tarefa.trim().toLowerCase() === valorDoInput.trim().toLowerCase()
+    )
+
+    if (tarefasFiltradas.length > 0) {
+      setErro({
+        active: true,
+        description: "Tarefa já cadastrada."
+      })
+      return
+    }
+
+    setTarefas(oldState => [...oldState, valorDoInput])
+    setValorDoInput("")
+  }
 
   return (
     <>
-      <button onClick={() => setCount(count + 1)}>count is {count}</button>
-      <p>{paridade}</p>
+      <div className="card">
+        <div className='input-wrapper'>
+          <input type="text" id='input-tarefa' value={valorDoInput} onChange={(e) => setValorDoInput(e.target.value)} />
+          <p className='erro'>{erro.active && erro.description}</p>
+        </div>
+        <button onClick={adicionarTarefa}>Adicionar Tarefa</button>
+      </div>
+      <ul>
+        {
+          tarefas.map((tarefa, index) => (
+            <li key={index}>{tarefa}</li>
+          ))
+        }
+      </ul>
     </>
-  );
+  )
 }
-
-export default App;
